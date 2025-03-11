@@ -2,8 +2,8 @@
 import Food from "../../model/foodmodel.js";
 
 export const postFood = async(req, res) => {
-  const { foodName, price, ingredients } = req.body;
-  if (!foodName || !price || !ingredients) {
+  const { foodName, price, ingredients, category } = req.body;
+  if (!foodName || !price || !ingredients || !category) {
     return res.status(400).json({ message: 'fill all info' });
   }
  try{
