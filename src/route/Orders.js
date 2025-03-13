@@ -1,10 +1,9 @@
-// ordersRouter.js (or your router file)
-import { Router } from "express";
-import getOrders from '../controlz/order/get-orders.js'; // Import the handler
 
+import { Router } from "express";
+import getOrders from '../controlz/order/get-orders.js'; 
+import postOrder from "../controlz/order/post-order.js";
 const router = Router();
 
-
-router.get('/', getOrders);
-
-export default router; // Export the router
+router.get('/all', getOrders);
+router.post('/order', postOrder)
+export default router;

@@ -3,7 +3,7 @@ import Food from "../../model/orderModel.js";
 export const getFOOD = async (req, res) => {
     const { foodID } = req.params;
     
-    // If foodID exists, try to find that specific food item
+
     if (foodID) {
         try {
             const foodshow = await Food.findById(foodID);
@@ -14,7 +14,7 @@ export const getFOOD = async (req, res) => {
                 });
             }
 
-            // Send the specific food item as a response
+     
             res.status(200).json({
                 message: 'Food fetched successfully',
                 data: foodshow,

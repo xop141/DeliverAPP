@@ -2,7 +2,7 @@ import express from 'express';
 import Food from '../../model/foodmodel.js';
 
 const getCategory = async (req, res) => {
-  const { category } = req.params; // Get category from URL parameter
+  const { category } = req.params; 
 console.log(category);
 
   try {
@@ -14,7 +14,7 @@ console.log(category);
       return res.status(404).json({ message: `No foods found in the category: ${category}` });
     }
 
-    // Return the list of foods
+    
     res.status(200).json(foods);
   } catch (error) {
     // Log the error for debugging purposes

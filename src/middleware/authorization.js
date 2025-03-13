@@ -1,29 +1,32 @@
-import bcrypt from 'bcrypt';
+import jwt from 'jsonwebtoken';
 import User from '../model/usermodel.js';
+const verifyToken = (req, res, next) => {
+  const authHeader = req.headers['authorization'];
+  const token = authHeader && authHeader.split(' ')[1];  // Extract token
 
-const loginUser = async (req, res) => {
-  const { email, password } = req.body;
 
-  try {
-    // Find the user by email
-    const user = await User.findOne({ email });
-    if (!user) {
-      return res.status(400).json({ message: 'User not found' });
-    }
-
-    // Compare the entered password with the hashed password
-    const isMatch = await bcrypt.compare(password, user.password);
-    if (!isMatch) {
-      return res.status(400).json({ message: 'Invalid credentials' });
-    }
-
-    res.status(200).json({ message: 'Login successful', user });
-
-  } catch (error) {
-    console.error(error);
-    res.status(500).json({ message: 'Error logging in', error: error.message });
+  if (!token) {
+    return res.status(403).json({ message: 'Access denied, no token provided' });
   }
+
+  jwt.verify(token, 'mySecretKey', (err, decoded) => {
+    if (err) {
+      return res.status(401).json({ message: 'Invalid token' });
+    }
+
+    req.user = decoded;
+    
+    
+if (decoded.email === req.body.email) {
+  next();  
+} else{
+  res.send("!!!")
+}
+   
+
+    
+  
+  });
 };
 
-// Default export of the function
-export default loginUser;
+export default verifyToken;

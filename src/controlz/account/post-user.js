@@ -1,10 +1,11 @@
 import bcrypt from 'bcrypt';
 import User from "../../model/usermodel.js";
+import jwt from 'jsonwebtoken';
 
 export const postUser = async (req, res) => {
-  const { username, email, phoneNumber, password } = req.body;
+  const { username, email, phoneNumber, password, role } = req.body;
 
-  // Validation
+
   if (!username) {
     return res.status(400).json({ message: 'Username is required' });
   }
@@ -22,26 +23,40 @@ export const postUser = async (req, res) => {
   }
 
   try {
-    // Check if the user already exists with the same username, email, or phoneNumber
     const existingUser = await User.findOne({ $or: [{ username }, { email }, { phoneNumber }] });
     if (existingUser) {
       return res.status(400).json({ message: 'User with this information already exists' });
     }
 
-    // Hash the password before saving the user
-    const hashedPassword = await bcrypt.hash(password, 10); // 10 is the salt rounds
+    const hashedPassword = await bcrypt.hash(password, 10); 
 
-    // Create a new user and save it
     const newUser = new User({
       ...req.body,
-      password: hashedPassword, // Replace the plain password with the hashed password
+      password: hashedPassword,
     });
 
     await newUser.save();
 
+    const token = jwt.sign(
+      { userId: newUser._id, email: newUser.email, role: role, hashedPassword  }, 
+      'mySecretKey',
+     
+    );
+
+    
+    
     res.status(201).json({
       message: 'User created successfully',
-      user: newUser,
+      user: {
+        username: newUser.username,
+        email: newUser.email,
+        phoneNumber: newUser.phoneNumber,
+        createdAt: newUser.createdAt,
+        updatedAt: newUser.updatedAt,
+        role: role
+
+      },
+      token, 
     });
 
   } catch (error) {
