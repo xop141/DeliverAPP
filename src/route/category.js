@@ -1,12 +1,12 @@
 // routes/userRoute.js
 
 import express from 'express';
-import category from "../controlz/category/get-category.js"
-import postcategory from '../controlz/category/post-category.js'
 
+import postcategory from '../controlz/category/post-category.js'
+import category from '../controlz/category/category.js';
 const route = express.Router();
 
-route.get('/:category', category );
-route.post("/postCategory", postcategory )
-
+// route.get('/:category', category );
+route.post("/postCategory", postcategory );
+route.get('/asd', category)
 export default route;

@@ -4,6 +4,7 @@ import jwt from 'jsonwebtoken';
 
 export const postUser = async (req, res) => {
 
+
   
   const { username, email, phoneNumber, password, role } = req.body;
 
@@ -23,15 +24,30 @@ export const postUser = async (req, res) => {
   // if (phoneNumber.length !== 8 || !/^\d{8}$/.test(phoneNumber)) { // Check for exactly 8 digits
   //   return res.status(400).json({ message: 'Phone number must be 8 digits' });
   // }
-  // if (!password || password.length < 8) { // Check if password is provided and is at least 8 characters
+  // if (!password || password.length < 7) { // Check if password is provided and is at least 8 characters
   //   return res.status(400).json({ message: 'Password is required and must be at least 8 characters' });
   // }
 
   try {
     const existingUser = await User.findOne({ $or: [{ username }, { email }, { phoneNumber }] });
     if (existingUser) {
-      return res.status(400).json({ message: 'User with this information already exists' });
-    }
+      let message = []
+      
+      // Check each field and append the appropriate message
+      if (existingUser.username === username) {
+      message.push("username")
+      }
+      if (existingUser.email === email) {
+        message.push("email")
+      }
+      if (existingUser.phoneNumber === phoneNumber) {
+        message.push("phone")
+      }
+
+    
+
+      return res.status(400).json({ message });
+  }
 
     const hashedPassword = await bcrypt.hash(password, 10); 
 
@@ -50,19 +66,19 @@ export const postUser = async (req, res) => {
 
     
     
-    res.status(201).json({
-      message: 'User created successfully',
-      user: {
-        username: newUser.username,
-        email: newUser.email,
-        phoneNumber: newUser.phoneNumber,
-        createdAt: newUser.createdAt,
-        updatedAt: newUser.updatedAt,
-        role: role
+    // res.status(201).json({
+    //   message: 'User created successfully',
+    //   user: {
+    //     username: newUser.username,
+    //     email: newUser.email,
+    //     phoneNumber: newUser.phoneNumber,
+    //     createdAt: newUser.createdAt,
+    //     updatedAt: newUser.updatedAt,
+    //     role: role
 
-      },
-      token, 
-    });
+    //   },
+    //   token, 
+    // });
 
   } catch (error) {
     console.error(error);
