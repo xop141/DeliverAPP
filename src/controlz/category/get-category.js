@@ -1,29 +1,23 @@
-import express from 'express';
-import Food from '../../model/foodmodel.js';
+import allCategory from "../../model/category.js";
 
 const getCategory = async (req, res) => {
-  const { category } = req.params; 
-console.log(category);
+    console.log("Fetching categories...");
 
-  try {
+    try {
+        const categories = await allCategory.find({});
+        console.log("Categories fetched successfully:", categories);
+        
+        // Send the categories back as a response
+        res.status(200).json(categories); // Sends the categories as a JSON response
+    } catch (err) {
+        console.error("Error fetching categories:", err);
 
-    const foods = await Food.find({ category });
-
-
-    if (foods.length === 0) {
-      return res.status(404).json({ message: `No foods found in the category: ${category}` });
+        // Send an error response
+        res.status(500).json({
+            message: "Error fetching categories",
+            error: err.message
+        });
     }
-
-    
-    res.status(200).json(foods);
-  } catch (error) {
-    // Log the error for debugging purposes
-    console.error(error);
-
-    // Send a 500 response for any server-side errors
-    res.status(500).json({ message: 'Server error. Please try again later.' });
-  }
 };
-
 
 export default getCategory;
