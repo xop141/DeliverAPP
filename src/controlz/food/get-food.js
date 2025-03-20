@@ -1,4 +1,4 @@
-import Food from "../../model/orderModel.js";
+import Food from "../../model/foodmodel.js";
 
 export const getFOOD = async (req, res) => {
     const { foodID } = req.params;
@@ -32,10 +32,7 @@ export const getFOOD = async (req, res) => {
             
             const foods = await Food.find(filter);
             
-            res.status(200).json({
-                message: 'Foods fetched successfully',
-                data: foods,
-            });
+            res.json(foods)
         } catch (error) {
             res.status(500).json({
                 message: 'Error fetching foods',
