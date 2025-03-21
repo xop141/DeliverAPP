@@ -3,83 +3,70 @@ import User from "../../model/usermodel.js";
 import jwt from 'jsonwebtoken';
 
 export const postUser = async (req, res) => {
-
-
-  
   const { username, email, phoneNumber, password, role } = req.body;
 
-
-
-
-
-  // if (!username) {
-  //   return res.status(400).json({ message: 'Username is required' });
-  // }
-  // if (!email) {
-  //   return res.status(400).json({ message: 'Email is required' });
-  // }
-  // if (!phoneNumber) {
-  //   return res.status(400).json({ message: 'Phone number is required' });
-  // }
-  // if (phoneNumber.length !== 8 || !/^\d{8}$/.test(phoneNumber)) { // Check for exactly 8 digits
-  //   return res.status(400).json({ message: 'Phone number must be 8 digits' });
-  // }
-  // if (!password || password.length < 7) { // Check if password is provided and is at least 8 characters
-  //   return res.status(400).json({ message: 'Password is required and must be at least 8 characters' });
-  // }
-
-  try {
-    const existingUser = await User.findOne({ $or: [{ username }, { email }, { phoneNumber }] });
-    if (existingUser) {
-      let message = []
-      
-      // Check each field and append the appropriate message
-      if (existingUser.username === username) {
-      message.push("username")
-      }
-      if (existingUser.email === email) {
-        message.push("email")
-      }
-      if (existingUser.phoneNumber === phoneNumber) {
-        message.push("phone")
-      }
-
-    
-
-      return res.status(400).json({ message });
+  // Simple validation (uncommented)
+  if (!username || !email || !phoneNumber || !password) {
+    return res.status(400).json({ message: 'All fields are required' });
   }
 
-    const hashedPassword = await bcrypt.hash(password, 10); 
+  // Phone number validation
+  if (phoneNumber.length !== 8 || !/^\d{8}$/.test(phoneNumber)) {
+    return res.status(400).json({ message: 'Phone number must be 8 digits' });
+  }
 
+  // Password validation
+  if (password.length < 7) {
+    return res.status(400).json({ message: 'Password must be at least 7 characters' });
+  }
+
+  try {
+    // Check if the username, email, or phone number already exists
+    const existingUser = await User.findOne({ $or: [{ username }, { email }, { phoneNumber }] });
+
+    if (existingUser) {
+      const message = [];
+
+      // Check each field and append the appropriate message
+      if (existingUser.username === username) message.push('Username already taken');
+      if (existingUser.email === email) message.push('Email already in use');
+      if (existingUser.phoneNumber === phoneNumber) message.push('Phone number already registered');
+
+      return res.status(400).json({ message });
+    }
+
+    // Hash the password
+    const hashedPassword = await bcrypt.hash(password, 10);
+
+    // Create a new user
     const newUser = new User({
-      ...req.body,
+      username,
+      email,
+      phoneNumber,
       password: hashedPassword,
+      role,
     });
 
     await newUser.save();
 
+    // Generate JWT token
     const token = jwt.sign(
-      { userId: newUser._id, email: newUser.email, role: role, hashedPassword  }, 
+      { userId: newUser._id, email: newUser.email, role: role },
       'mySecretKey',
-     
+      { expiresIn: '1h' }  // Token expiration for security
     );
 
-    
-    
-    // res.status(201).json({
-    //   message: 'User created successfully',
-    //   user: {
-    //     username: newUser.username,
-    //     email: newUser.email,
-    //     phoneNumber: newUser.phoneNumber,
-    //     createdAt: newUser.createdAt,
-    //     updatedAt: newUser.updatedAt,
-    //     role: role
-
-    //   },
-    //   token, 
-    // });
-
+    // Return success response with token
+    return res.status(201).json({
+      message: 'User created successfully',
+      user: {
+        username: newUser.username,
+        email: newUser.email,
+        phoneNumber: newUser.phoneNumber,
+        role: newUser.role,
+      },
+      token,
+    });
   } catch (error) {
     console.error(error);
     res.status(500).json({
