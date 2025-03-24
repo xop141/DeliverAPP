@@ -3,21 +3,19 @@ import foodModel from '../../model/foodmodel.js';
 import jwt from 'jsonwebtoken';
 
 const postOrder = async (req, res) => {
-    const authHeader = req.headers['authorization'];
-    const token = authHeader && authHeader.split(' ')[1];
 
-    if (!token) {
-        return res.status(403).json({ message: 'Access denied, no token provided' });
-    }
 
-    const { foodname, quantity } = req.body;
 
-    if (!foodname) {
-        return res.status(400).send("Please provide a food item name.");
-    }
+
+    
+    const { id, quantity ,token } = req.body;
+
+    // if (!id) {
+    //     return res.status(400).send("Please provide a food item id.");
+    // }
 
     try {
-        const food = await foodModel.findOne({ foodName: foodname });
+        const food = await foodModel.findOne({ _id: id });
 
         if (!food) {
             return res.status(404).send("Food item not found.");
@@ -26,15 +24,14 @@ const postOrder = async (req, res) => {
         if (!quantity) {
             return res.status(400).send("Quantity is missing.");
         }
-
-        const decoded = jwt.verify(token, 'mySecretKey');
+      
+        const decoded = jwt.verify(token, 'secretKey');
         const userId = decoded.userId; 
-
-
+        
         const totalPrice = quantity * food.price;
 
         const newOrder = new Model({
-            foodname,
+            orderedFoodId: id,
             totalPrice,
             quantity,
             ordered: userId

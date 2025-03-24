@@ -5,5 +5,5 @@ import postOrder from "../controlz/order/post-order.js";
 const router = Router();
 
 router.get('/all', getOrders);
-router.post('/order', postOrder)
+router.post('/', postOrder)
 export default router;

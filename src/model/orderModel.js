@@ -2,7 +2,7 @@ import mongoose from 'mongoose';
 const { Schema, model } = mongoose;
 
 const Order = new Schema({
-  foodname: String,
+  orderedFoodId: String,
   totalPrice: Number,
   status: {
     type: String,
