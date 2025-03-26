@@ -3,18 +3,10 @@ import foodModel from '../../model/foodmodel.js';
 import jwt from 'jsonwebtoken';
 
 const postOrder = async (req, res) => {
-
-
-
-
-    
-    const { id, quantity ,token } = req.body;
-
-    // if (!id) {
-    //     return res.status(400).send("Please provide a food item id.");
-    // }
+    const { id, quantity, token } = req.body;
 
     try {
+        // Find the food item by its ID
         const food = await foodModel.findOne({ _id: id });
 
         if (!food) {
@@ -24,21 +16,27 @@ const postOrder = async (req, res) => {
         if (!quantity) {
             return res.status(400).send("Quantity is missing.");
         }
-      
+
+        // Verify the token and extract the userId
         const decoded = jwt.verify(token, 'secretKey');
-        const userId = decoded.userId; 
-        
+        const userId = decoded.userId;
+
+        // Calculate the total price based on the quantity and food price
         const totalPrice = quantity * food.price;
 
+        // Create a new order, including the food name in the order
         const newOrder = new Model({
             orderedFoodId: id,
             totalPrice,
             quantity,
-            ordered: userId
+            ordered: userId,
+            foodName: food.foodName // Adding the food name to the order
         });
 
+        // Save the new order to the database
         await newOrder.save();
 
+        // Send a success response
         return res.status(201).json({ message: "Order placed successfully", data: newOrder });
 
     } catch (error) {
