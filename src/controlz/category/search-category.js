@@ -2,12 +2,12 @@ import express from 'express';
 import Food from '../../model/foodmodel.js';
 
 const getCategory = async (req, res) => {
-  const { category } = req.params; 
-console.log(category);
+  const {category} = req.body; 
+
 
   try {
 
-    const foods = await Food.find({ category });
+    const foods = await Food.find({category});
 
 
     if (foods.length === 0) {
@@ -16,6 +16,8 @@ console.log(category);
 
     
     res.status(200).json(foods);
+ 
+    
   } catch (error) {
     // Log the error for debugging purposes
     console.error(error);
