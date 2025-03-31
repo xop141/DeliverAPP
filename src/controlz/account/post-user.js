@@ -1,6 +1,7 @@
-import bcrypt from 'bcrypt';
+
 import User from "../../model/usermodel.js";
 
+import bcrypt from 'bcrypt'
 
 
 

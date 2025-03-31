@@ -1,16 +1,13 @@
 import mongoose from 'mongoose';
+
 const { Schema, model } = mongoose;
 
-const foodzSchema = new Schema({
-    foodName: String,
-    price: Number,
-    ingredients: String,
-    category: String
-  
- 
-},
-{ timestamps: true });
+const foodSchema = new Schema({
+  foodName: { type: String, required: true }, // Make sure to match "foodName" with your order model
+  price: { type: Number, required: true },
+  description: { type: String },
+  imageUrl: { type: String }, // Optional: Food image
+});
 
-const Food = model('Food', foodzSchema);  
-
-export default Food;  
+const Food = model('Food', foodSchema);
+export default Food;

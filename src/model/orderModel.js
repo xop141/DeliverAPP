@@ -1,23 +1,32 @@
 import mongoose from 'mongoose';
+
 const { Schema, model } = mongoose;
 
-const Order = new Schema({
-  foodName: String,
-  orderedFoodId: String,
-  totalPrice: Number,
-  status: {
-    type: String,
-    enum: ['pending', 'canceled', 'delivered'],
-    default: 'pending',
+const orderSchema = new Schema(
+  {
+    userId: { type: Schema.Types.ObjectId, ref: 'User', required: true }, // Referencing the User model
+    foods: [
+      {
+        foodId: { type: Schema.Types.ObjectId, ref: 'Food', required: true }, // Referencing the Food model
+        foodName: { type: String, required: true },
+        quantity: { type: Number, required: true, default: 1 }, // Quantity of the food
+        price: { type: Number, required: true }, // Price per unit of the food
+      }
+    ], 
+   
   },
-  quantity: Number,
-  ordered: {
-    type: mongoose.Schema.Types.ObjectId,
-    ref: 'User',  // Reference to the User model (assuming "User" is the model for users)
-  }
-}, 
-{ timestamps: true });
+  { timestamps: true }
+);
 
-const FoodOrder = model('FoodOrder', Order);
+// Calculate the total price of the order based on the foods and quantities
+orderSchema.pre('save', function (next) {
+  this.totalPrice = this.foods.reduce(
+    (total, food) => total + food.quantity * food.price,
+    0
+  );
+  next();
+});
 
-export default FoodOrder;
+const Order = model('Order', orderSchema);
+
+export default Order;

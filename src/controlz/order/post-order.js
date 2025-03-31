@@ -1,51 +1,47 @@
-import Model from "../../model/orderModel.js";
-import foodModel from '../../model/foodmodel.js';
-import jwt from 'jsonwebtoken';
+import Order from "../../model/orderModel.js";
+import Food from "../../model/foodmodel.js"; 
+import {jwtDecode} from 'jwt-decode';
+export default async function postOrder(req, res) {
+   
+    
+  const { userId, foods } = req.body; // foods: array of objects with { foodId, quantity }
 
-const postOrder = async (req, res) => {
-    const { id, quantity, token } = req.body;
+   
+  try {
+    // const decodedToken = jwtDecode(token);
+    // const userId = decodedToken?.userId;
+    const orderItems = [];
 
-    try {
-        // Find the food item by its ID
-        const food = await foodModel.findOne({ _id: id });
+    for (let foodItem of foods) {
+      const { foodId, quantity } = foodItem;
 
-        if (!food) {
-            return res.status(404).send("Food item not found.");
-        }
+      // Find the food item by foodId
+      const food = await Food.findById(foodId);
 
-        if (!quantity) {
-            return res.status(400).send("Quantity is missing.");
-        }
+      if (!food) {
+        return res.status(404).json({ message: `Food item with ID ${foodId} not found` });
+      }
 
-        // Verify the token and extract the userId
-        const decoded = jwt.verify(token, 'secretKey');
-        const userId = decoded.userId;
-
-        // Calculate the total price based on the quantity and food price
-        const totalPrice = quantity * food.price;
-
-        // Create a new order, including the food name in the order
-        const newOrder = new Model({
-            orderedFoodId: id,
-            totalPrice,
-            quantity,
-            ordered: userId,
-            foodName: food.foodName // Adding the food name to the order
-        });
-
-        // Save the new order to the database
-        await newOrder.save();
-
-        // Send a success response
-        return res.status(201).json({ message: "Order placed successfully", data: newOrder });
-
-    } catch (error) {
-        console.error("Error occurred:", error);
-        if (error.name === 'JsonWebTokenError') {
-            return res.status(401).json({ message: 'Invalid token' });
-        }
-        return res.status(500).send("An error occurred while processing the order.");
+      // Add the food details to the orderItems array
+      orderItems.push({
+        foodId: food._id,
+        foodName: food.foodName,   // Assuming you have a 'foodName' in your Food model
+        quantity,
+        price: food.price          // Assuming you have a 'price' in your Food model
+      });
     }
-};
 
-export default postOrder;
+    // Now, create the order with the array of order items
+    const newOrder = new Order({
+      userId,
+      foods: orderItems,
+    });
+
+    await newOrder.save();
+
+    return res.status(201).json({ message: 'Order placed successfully', data: newOrder });
+  } catch (error) {
+    console.error("Error placing order:", error);
+    return res.status(500).json({ message: 'Error placing order' });
+  }
+};
