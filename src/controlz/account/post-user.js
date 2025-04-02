@@ -55,7 +55,7 @@ export const postUser = async (req, res) => {
 
     await newUser.save();
 
-    // Generate JWT token
+  
   
     
     return res.status(201).json({
@@ -66,7 +66,7 @@ export const postUser = async (req, res) => {
         phoneNumber: newUser.phoneNumber,
         role: newUser.role,
       },
-      token, // Token is returned only once
+      // token, // Token is returned only once
     });
   } catch (error) {
     console.error('Error creating user:', error);  // Detailed logging
