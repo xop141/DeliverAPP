@@ -1,35 +1,39 @@
 import Model from "../../model/orderModel.js";
-import {jwtDecode} from 'jwt-decode';
+import { jwtDecode } from 'jwt-decode'; // Import jwtDecode to decode the token
 
 const getOrder = async (req, res) => {
   try {
-    // Get the token from the request headers
-    const {token} = req.body
+    // Get the token from the request body
+    const token = req.body.token;
 
-    if (!token) {
-      return res.status(401).json({ message: "Token is missing" });
+    if (token) {
+      // If token is provided, decode it
+      const decoded = jwtDecode(token);
+
+      if (!decoded || !decoded.userId) {
+        return res.status(400).json({ message: "Invalid token, userId not found" });
+      }
+
+      const userId = decoded.userId;
+
+      // Retrieve the orders for the decoded userId
+      const orders = await Model.find({ userId });
+
+      if (orders.length === 0) {
+        return res.status(404).json({ message: "No orders found for this user" });
+      }
+
+      return res.status(200).json(orders);
+    } else {
+      // If no token is provided, fetch all orders
+      const allOrders = await Model.find({});
+
+      if (allOrders.length === 0) {
+        return res.status(404).json({ message: "No orders found" });
+      }
+
+      return res.status(200).json(allOrders);
     }
-
-    // Decode the token
-    const decodedToken = jwtDecode(token);
-    const userId = decodedToken?.userId;
-
-
-
-    if (!userId) {
-      return res.status(400).json({ message: "Invalid token: userId is missing" });
-    }
-
-    // Find orders for the specific user by userId
-    const orders = await Model.find({ userId });
-
-    // If no orders found
-    if (orders.length === 0) {
-      return res.status(404).json({ message: "No orders found for this user" });
-    }
-
-    // Send the orders as a response
-    return res.status(200).json(orders);
 
   } catch (err) {
     console.error("Error fetching orders:", err);

@@ -13,19 +13,16 @@ const orderSchema = new Schema(
         price: { type: Number, required: true }, // Price per unit of the food
       }
     ], 
-   
+    status: { 
+      type: String, 
+      enum: ['pending', 'completed', 'cancelled'], 
+      default: 'pending' // Default status is 'pending'
+    }
   },
   { timestamps: true }
 );
 
-// Calculate the total price of the order based on the foods and quantities
-orderSchema.pre('save', function (next) {
-  this.totalPrice = this.foods.reduce(
-    (total, food) => total + food.quantity * food.price,
-    0
-  );
-  next();
-});
+// Remove the pre-save hook for calculating totalPrice
 
 const Order = model('Order', orderSchema);
 
